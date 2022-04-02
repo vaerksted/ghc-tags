@@ -5,7 +5,7 @@ module GhcTags.Utils
   , notNewLine
   ) where
 
--- | Platform dependend eol:
+-- | Platform dependent eol:
 --
 -- * windows      "CRNL"
 -- * maxos        "CR"

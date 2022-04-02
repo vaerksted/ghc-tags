@@ -1,9 +1,9 @@
 cabal-version:       2.4
 name:                ghc-tags
 version:             1.5
-synopsis:            Utility for generating ctags and etags with GHC API.
-description:         Utility for generating etags (Emacs) and ctags (Vim and other
-                     editors) with GHC API for efficient project navigation.
+synopsis:            Utility for generating Exuberant Ctags and Etags with GHC API.
+description:         Utility for generating Exuberant Ctags and Etags with GHC API
+                     for efficient project navigation.
 license:             MPL-2.0
 license-file:        LICENSE
 author:              Andrzej Rybczak
@@ -62,11 +62,11 @@ executable ghc-tags
                        GhcTags.Ghc
                        GhcTags.GhcCompat
                        GhcTags.Tag
-                       GhcTags.CTag
-                       GhcTags.CTag.Header
-                       GhcTags.CTag.Parser
-                       GhcTags.CTag.Formatter
-                       GhcTags.CTag.Utils
+                       GhcTags.ECTag
+                       GhcTags.ECTag.Header
+                       GhcTags.ECTag.Parser
+                       GhcTags.ECTag.Formatter
+                       GhcTags.ECTag.Utils
                        GhcTags.ETag
                        GhcTags.ETag.Parser
                        GhcTags.ETag.Formatter

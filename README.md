@@ -3,11 +3,8 @@
 [![Build Status](https://github.com/arybczak/ghc-tags/workflows/Haskell-CI/badge.svg?branch=master)](https://github.com/arybczak/ghc-tags/actions?query=branch%3Amaster)
 [![Hackage](https://img.shields.io/hackage/v/ghc-tags.svg)](https://hackage.haskell.org/package/ghc-tags)
 
-A command line tool that generates etags
-([Emacs](https://www.gnu.org/software/emacs)) and ctags
-([Vim](https://www.vim.org), [VSCode](https://code.visualstudio.com) with
-[ctagsx](https://marketplace.visualstudio.com/items?itemName=jtanx.ctagsx) etc.)
-for efficient code navigation (jump to definition).
+A command line tool that generates Exuberant Ctags and Etags for efficient
+code navigation (jump to definition).
 
 Main features:
 * Leverages GHC API to obtain accurate information.
@@ -23,9 +20,9 @@ Supported file extensions:
 
 ## Usage
 
-For simple projects, i.e. the ones that don't use C pre-processor in non-trivial
-ways nor include any C sources it should be enough to execute `ghc-tags -e` (for
-etags) or `ghc-tags -c` (for ctags) in the root directory of the project.
+For simple projects, i.e. the ones that don't use C preprocessor in non-trivial
+ways nor include any C sources it should be enough to execute `ghc-tags -c` (for
+ctags) or `ghc-tags -e` (for etags) in the root directory of the project.
 
 For more complicated projects you need to create the configuration file
 (`ghc-tags.yaml` by default). It can contain the following keys:
@@ -37,8 +34,8 @@ For more complicated projects you need to create the configuration file
 * `extensions` - a list of GHC language extensions to enable when parsing. Note
   that GHC needs much less extensions for parsing alone, so you should almost
   never need to override this.
-* `cpp_includes` - include paths for the C pre-processor.
-* `cpp_options` - other options for the C pre-processor, e.g. defines (usually
+* `cpp_includes` - include paths for the C preprocessor.
+* `cpp_options` - other options for the C preprocessor, e.g. defines (usually
   undefined `MIN_VERSION_x` macros will go here).
 
 If any of these keys is not specified, an appropriate default value will be

@@ -9,7 +9,7 @@ import GhcTags.Tag
 import Paths_ghc_tags (version)
 
 defaultOutputFile :: TagType -> FilePath
-defaultOutputFile CTag = "tags"
+defaultOutputFile ECTag = "tags"
 defaultOutputFile ETag = "TAGS"
 
 -- | Get source paths from the configuration file or command line arguments.
@@ -40,7 +40,7 @@ argsParser defaultThreads = do
               }
   where
     ctags :: Parser TagType
-    ctags = flag' CTag $ long "ctags"
+    ctags = flag' ECTag $ long "ctags"
                       <> short 'c'
                       <> help "Generate ctags"
 

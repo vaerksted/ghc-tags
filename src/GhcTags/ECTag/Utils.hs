@@ -1,13 +1,13 @@
 {-# LANGUAGE GADTs #-}
 
-module GhcTags.CTag.Utils
+module GhcTags.ECTag.Utils
   ( tagKindToChar
   , charToTagKind
   ) where
 
 import           GhcTags.Tag
 
-tagKindToChar :: CTagKind -> Maybe Char
+tagKindToChar :: ECTagKind -> Maybe Char
 tagKindToChar tk = case tk of
     -- No 'F' kind since it's for a filename.
     TkModule                  -> Just 'M'
@@ -34,7 +34,7 @@ tagKindToChar tk = case tk of
     NoKind                    -> Nothing
 
 
-charToTagKind :: Char -> CTagKind
+charToTagKind :: Char -> ECTagKind
 charToTagKind c = case c of
      'M' -> TkModule
      '`' -> TkTerm

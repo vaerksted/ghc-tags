@@ -47,9 +47,9 @@ import qualified Data.Vector as V
 import GhcTags
 import GhcTags.Config.Args
 import GhcTags.Config.Project
-import GhcTags.CTag.Header
+import GhcTags.ECTag.Header
 import GhcTags.GhcCompat
-import qualified GhcTags.CTag as CTag
+import qualified GhcTags.ECTag as ECTag
 import qualified GhcTags.ETag as ETag
 
 ----------------------------------------
@@ -199,7 +199,7 @@ main = do
     initWorkerData args threads = do
       tags@DirtyTags{dtTags} <- case aTagType args of
         ETag -> readTags SingETag (aTagFile args)
-        CTag -> readTags SingCTag (aTagFile args)
+        ECTag -> readTags SingECTag (aTagFile args)
       -- If tags are empty there is no point looking at mtimes.
       mtimes <- if Map.null dtTags
         then pure Map.empty
@@ -258,13 +258,13 @@ writeTimes timesFile times = withFile timesFile WriteMode $ \h -> do
 
 data DirtyTags = forall tt. DirtyTags
   { dtKind    :: SingTagType tt
-  , dtHeaders :: [CTag.Header]
+  , dtHeaders :: [ECTag.Header]
   , dtTags    :: Map.Map TagFileName (Updated [Tag tt])
   }
 
 data Tags = forall tt. Tags
   { tKind    :: SingTagType tt
-  , tHeaders :: [CTag.Header]
+  , tHeaders :: [ECTag.Header]
   , tTags    :: Map.Map TagFileName [Tag tt]
   }
 
@@ -297,10 +297,10 @@ readTags tt tagsFile = doesFileExist tagsFile >>= \case
 
     parseTagsFile
       :: T.Text
-      -> IO (Either String ([CTag.Header], Map.Map TagFileName [Tag tt]))
+      -> IO (Either String ([ECTag.Header], Map.Map TagFileName [Tag tt]))
     parseTagsFile = case tt of
       SingETag -> fmap (fmap ([], )) . ETag.parseTagsFile
-      SingCTag ->                      CTag.parseTagsFile
+      SingECTag ->                      ECTag.parseTagsFile
 
 updateTagsWith :: DynFlags -> Located HsModule -> DirtyTags -> DirtyTags
 updateTagsWith dflags hsModule DirtyTags{..} =
@@ -326,7 +326,7 @@ cleanupTags args DirtyTags{..} = do
     if | exists && updated -> do
            let cleanedTags = ignoreSimilarClose $ sortBy compareNAK tags
            case dtKind of
-             SingCTag -> if aExModeSearch args
+             SingECTag -> if aExModeSearch args
                then addExCommands file cleanedTags
                else pure $ Just cleanedTags
              SingETag -> addFileOffsets file cleanedTags
@@ -360,9 +360,9 @@ cleanupTags args DirtyTags{..} = do
              )
     ignoreSimilarClose tags = tags
 
--- | Convert 'tagAddress' of CTags to an Ex mode search command as some editors
+-- | Convert 'tagAddress' of ECTags to an Ex mode search command as some editors
 -- (e.g. Kate) don't support jumping to a line number and require a line match.
-addExCommands :: TagFileName -> [CTag] -> IO (Maybe [CTag])
+addExCommands :: TagFileName -> [ECTag] -> IO (Maybe [ECTag])
 addExCommands file tags = do
   let path = T.unpack $ getTagFileName file
   tryIOError (BS.readFile path) >>= \case
@@ -373,7 +373,7 @@ addExCommands file tags = do
       let fileLines = V.fromList $ BS.lines content
       pure . Just $ fillExCommands fileLines tags
   where
-    fillExCommands :: V.Vector BS.ByteString -> [CTag] -> [CTag]
+    fillExCommands :: V.Vector BS.ByteString -> [ECTag] -> [ECTag]
     fillExCommands fileLines = mapMaybe $ \tag -> case tagAddr tag of
       TagCommand{}        -> Just tag
       TagLine lineNo      -> do
@@ -419,7 +419,7 @@ writeTags tagsFile Tags{..} = withFile tagsFile WriteMode $ \h ->
   BS.hPutBuilder h $ case tKind of
     SingETag -> (`Map.foldMapWithKey` tTags) $ \path ->
       ETag.formatTagsFile path . sortBy ETag.compareTags
-    SingCTag -> CTag.formatTagsFile headers tTags
+    SingECTag -> ECTag.formatTagsFile headers tTags
   where
     headers :: [Header]
     headers = if null tHeaders

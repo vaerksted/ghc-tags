@@ -1,6 +1,6 @@
--- | Parser combinators for vim style tags (ctags)
+-- | Parser combinators for extended ctags
 --
-module GhcTags.CTag.Parser
+module GhcTags.ECTag.Parser
   ( parseTagsFile
   -- * parse a ctag
   , parseTag
@@ -18,14 +18,14 @@ import           Data.Text          (Text)
 import qualified Data.Text          as Text
 
 import           GhcTags.Tag
-import           GhcTags.CTag.Header
-import           GhcTags.CTag.Utils
+import           GhcTags.ECTag.Header
+import           GhcTags.ECTag.Utils
 
 
 
--- | Parser for a 'CTag' from a single text line.
+-- | Parser for a 'ECTag' from a single text line.
 --
-parseTag :: Parser (TagFileName, CTag)
+parseTag :: Parser (TagFileName, ECTag)
 parseTag =
       (\tagName tagFileName tagAddr (tagKind, tagFields)
         -> (tagFileName, Tag { tagName
@@ -58,7 +58,7 @@ parseTag =
         )
 
   where
-    fieldsInLine :: Parser CTagFields
+    fieldsInLine :: Parser ECTagFields
     fieldsInLine = separator *> parseFields <* endOfLine
                    <|>
                    endOfLine $> mempty
@@ -88,12 +88,12 @@ parseTag =
           | otherwise                 = Just (jdelim, c1, c2)
 
     -- We only parse `TagLine` or `TagCommand`.
-    parseTagAddress :: Parser CTagAddress
+    parseTagAddress :: Parser ECTagAddress
     parseTagAddress = TagLine <$> AT.decimal
                       <|>
                       TagCommand <$> parseExSearchCommand
 
-    parseFields :: Parser CTagFields
+    parseFields :: Parser ECTagFields
     parseFields = TagFields <$> AT.sepBy parseField separator
 
 
@@ -105,9 +105,9 @@ parseField =
      <*> AT.takeWhile notTabOrNewLine
 
 
--- | A vim-style tag file parser.
+-- | A tag file parser.
 --
-parseTags :: Parser ([Header], CTagMap)
+parseTags :: Parser ([Header], ECTagMap)
 parseTags = (\headers tags -> (headers, Map.fromListWith (++) $ map sndList tags))
   <$> many parseHeader
   <*> many parseTag
@@ -187,10 +187,10 @@ parseHeader = do
 
 
 
--- | Parse a vim-style tag file.
+-- | Parse a "tag" file.
 --
 parseTagsFile :: Text
-              -> IO (Either String ([Header], CTagMap))
+              -> IO (Either String ([Header], ECTagMap))
 parseTagsFile =
       fmap AT.eitherResult
     . AT.parseWith (pure mempty) parseTags

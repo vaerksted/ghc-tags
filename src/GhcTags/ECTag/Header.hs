@@ -1,4 +1,4 @@
-module GhcTags.CTag.Header
+module GhcTags.ECTag.Header
   ( Header (..)
   , defaultHeaders
   , HeaderType (..)

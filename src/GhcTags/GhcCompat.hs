@@ -80,7 +80,7 @@ compatInitSettings top_dir = do
   -- NB: top_dir is assumed to be in standard Unix
   -- format, '/' separated
   mtool_dir <- findToolDir top_dir
-        -- see Note [tooldir: How GHC finds mingw on Windows]
+        -- see Note [tooldir: How GHC finds MinGW on Windows]
 
   let installed :: FilePath -> FilePath
       installed file = top_dir </> file
@@ -109,9 +109,9 @@ compatInitSettings top_dir = do
       getBooleanSetting key = either error pure $
         getRawBooleanSetting settingsFile mySettings key
   myExtraGccViaCFlags <- getSetting "GCC extra via C opts"
-  -- On Windows, mingw is distributed with GHC,
-  -- so we look in TopDir/../mingw/bin,
-  -- as well as TopDir/../../mingw/bin for hadrian.
+  -- On Windows, MinGW is distributed with GHC,
+  -- so we look in TopDir/../MinGW/bin,
+  -- as well as TopDir/../../MinGW/bin for hadrian.
   -- It would perhaps be nice to be able to override this
   -- with the settings file, but it would be a little fiddly
   -- to make that possible, so for now you can't.

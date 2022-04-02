@@ -4,22 +4,22 @@ module GhcTags.Tag
   , SingTagType (..)
   , Tag (..)
   , ETag
-  , CTag
+  , ECTag
   , ETagMap
-  , CTagMap
+  , ECTagMap
     -- ** Tag fields
   , TagName (..)
   , TagFileName (..)
   , ExCommand (..)
   , TagAddress (..)
-  , CTagAddress
+  , ECTagAddress
   , ETagAddress
   , TagKind (..)
-  , CTagKind
+  , ECTagKind
   , ETagKind
   , TagDefinition (..)
   , TagFields (..)
-  , CTagFields
+  , ECTagFields
   , ETagFields
   , TagField (..)
     -- ** Ordering and combining tags
@@ -55,16 +55,16 @@ import qualified GHC.Utils.Outputable as Out
 -- Tag
 --
 
--- | Promoted data type used to disntinguish 'CTag's from 'ETag's.
+-- | Promoted data type used to disntinguish 'ECTag's from 'ETag's.
 --
-data TagType = CTag | ETag
+data TagType = ECTag | ETag
   deriving Show
 
 
 -- | Singletons for promoted types.
 --
 data SingTagType (tt :: TagType) where
-    SingCTag :: SingTagType 'CTag
+    SingECTag :: SingTagType 'ECTag
     SingETag :: SingTagType 'ETag
 
 
@@ -84,7 +84,7 @@ newtype TagFileName = TagFileName { getTagFileName :: Text }
 instance NFData TagFileName where
   rnf = rnf . getTagFileName
 
--- | When we parse a `tags` file we can eithera find no kind or recognize the
+-- | When we parse a `tags` file we can either find no kind or recognise the
 -- kind of GhcTagKind or we store the found character kind.  This allows us to
 -- preserve information from parsed tags files which were not created by
 -- `ghc-tags-plugin'
@@ -135,7 +135,7 @@ data TagKind (tt :: TagType) where
 instance NFData (TagKind tt) where
   rnf x = x `seq` ()
 
-type CTagKind = TagKind 'CTag
+type ECTagKind = TagKind 'ECTag
 type ETagKind = TagKind 'ETag
 
 deriving instance Eq   (TagKind tt)
@@ -150,7 +150,7 @@ newtype ExCommand = ExCommand { getExCommand :: Text }
 -- | Tag address, either from a parsed file or from Haskell's AST>
 --
 data TagAddress (tt :: TagType) where
-      -- | Address of an etag is a line number and byte offset from the begining
+      -- | Address of an etag is a line number and byte offset from the beginning
       -- of the file.
       --
       TagLineOff :: Int -> Int -> TagAddress 'ETag
@@ -159,18 +159,18 @@ data TagAddress (tt :: TagType) where
       -- them separated by `;`). We parse line number specifically, since they
       -- are useful for ordering tags.
       --
-      TagLine :: Int -> TagAddress 'CTag
+      TagLine :: Int -> TagAddress 'ECTag
 
       -- | A tag address can be just an ex command.
       --
-      TagCommand :: ExCommand -> TagAddress 'CTag
+      TagCommand :: ExCommand -> TagAddress 'ECTag
 
 instance NFData (TagAddress tt) where
   rnf x = x `seq` ()
 
--- | 'CTag' addresses.
+-- | 'ECTag' addresses.
 --
-type CTagAddress = TagAddress 'CTag
+type ECTagAddress = TagAddress 'ECTag
 
 -- | 'ETag' addresses.
 --
@@ -213,13 +213,13 @@ fileField :: TagField
 fileField = TagField { fieldName = "file", fieldValue = "" }
 
 
--- | Ctags specific list of 'TagField's.
+-- | Exuberant Ctags specific list of 'TagField's.
 --
 data TagFields (tt :: TagType) where
     NoTagFields :: TagFields 'ETag
 
     TagFields   :: [TagField]
-                -> TagFields 'CTag
+                -> TagFields 'ECTag
 
 instance NFData (TagFields tt) where
   rnf NoTagFields    = ()
@@ -230,12 +230,12 @@ deriving instance Eq   (TagFields tt)
 instance Semigroup (TagFields tt) where
     NoTagFields   <> NoTagFields   = NoTagFields
     (TagFields a) <> (TagFields b) = TagFields (a ++ b)
-instance Monoid (TagFields 'CTag) where
+instance Monoid (TagFields 'ECTag) where
     mempty = TagFields mempty
 instance Monoid (TagFields 'ETag) where
     mempty = NoTagFields
 
-type CTagFields = TagFields 'CTag
+type ECTagFields = TagFields 'ECTag
 type ETagFields = TagFields 'ETag
 
 
@@ -246,7 +246,7 @@ data Tag (tt :: TagType) = Tag
   { tagName       :: TagName
     -- ^ name of the tag
   , tagKind       :: TagKind tt
-    -- ^ ctags specifc field, which classifies tags
+    -- ^ ctags specific field, which classifies tags
   , tagAddr       :: TagAddress tt
     -- ^ address in source file
   , tagDefinition :: TagDefinition tt
@@ -264,11 +264,11 @@ instance NFData (Tag tt) where
           `seq` rnf tagDefinition
           `seq` rnf tagFields
 
-type CTag = Tag 'CTag
+type ECTag = Tag 'ECTag
 type ETag = Tag 'ETag
 
 type TagMap tt = Map TagFileName [Tag tt]
-type CTagMap = TagMap 'CTag
+type ECTagMap = TagMap 'ECTag
 type ETagMap = TagMap 'ETag
 
 -- | Total order relation on 'Tag' elements.
@@ -326,7 +326,7 @@ ghcTagToTag sing dynFlags GhcTag { gtSrcSpan, gtTag, gtKind, gtIsExported, gtFFI
 
           , tagAddr       = case sing of
                               SingETag -> TagLineOff (srcSpanStartLine realSrcSpan) 0
-                              SingCTag -> TagLine    (srcSpanStartLine realSrcSpan)
+                              SingECTag -> TagLine    (srcSpanStartLine realSrcSpan)
 
           , tagKind       = fromGhcTagKind gtKind
 
@@ -370,7 +370,7 @@ ghcTagToTag sing dynFlags GhcTag { gtSrcSpan, gtTag, gtKind, gtIsExported, gtFFI
     staticField :: SingTagType tt -> TagFields tt
     staticField = \case
       SingETag -> NoTagFields
-      SingCTag ->
+      SingECTag ->
         TagFields $
           if gtIsExported
             then mempty
@@ -380,7 +380,7 @@ ghcTagToTag sing dynFlags GhcTag { gtSrcSpan, gtTag, gtKind, gtIsExported, gtFFI
     ffiField :: SingTagType tt -> TagFields tt
     ffiField = \case
       SingETag -> NoTagFields
-      SingCTag ->
+      SingECTag ->
         TagFields $
           case gtFFI of
             Nothing  -> mempty
@@ -391,7 +391,7 @@ ghcTagToTag sing dynFlags GhcTag { gtSrcSpan, gtTag, gtKind, gtIsExported, gtFFI
     kindField :: SingTagType tt -> TagFields tt
     kindField = \case
       SingETag -> NoTagFields
-      SingCTag ->
+      SingECTag ->
         case gtKind of
           GtkTypeClassInstance hsType ->
             mkField "instance" hsType
@@ -434,7 +434,7 @@ ghcTagToTag sing dynFlags GhcTag { gtSrcSpan, gtTag, gtKind, gtIsExported, gtFFI
     -- fields
     --
     
-    mkField :: Out.Outputable p => Text -> p -> TagFields 'CTag
+    mkField :: Out.Outputable p => Text -> p -> TagFields 'ECTag
     mkField fieldName  p =
       TagFields
         [ TagField
