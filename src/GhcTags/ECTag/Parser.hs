@@ -1,4 +1,4 @@
--- | Parser combinators for extended ctags
+-- | Parser combinators for exuberant ctags
 --
 module GhcTags.ECTag.Parser
   ( parseTagsFile
